@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Loader2, Sparkles } from "lucide-react";
+import { Copy, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Markdown } from "@/components/markdown";
 import { HistoryPanel } from "@/components/history-panel";
 import { generateShiftPlan } from "@/lib/capaciti.functions";
+import { DEMO_SHIFT } from "@/lib/demo-scenarios";
 import {
   deleteGeneration,
   listGenerations,
@@ -59,11 +60,23 @@ export function TabShift() {
     }
   }
 
+  function loadDemo() {
+    setTickets(DEMO_SHIFT.tickets);
+    setShiftHours(DEMO_SHIFT.shiftHours);
+    setTechnicians(DEMO_SHIFT.technicians);
+    toast.success("Demo scenario loaded: five-ticket support queue.");
+  }
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="space-y-6">
-        <section className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold">Queue &amp; shift setup</h2>
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="min-w-0 space-y-6">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold">Queue &amp; shift setup</h2>
+            <Button variant="outline" size="sm" onClick={loadDemo}>
+              <Wand2 className="size-3.5" /> Load Demo Scenario
+            </Button>
+          </div>
           <div className="mt-4 space-y-2">
             <Label htmlFor="tickets">Support tickets (one per line)</Label>
             <Textarea
@@ -105,7 +118,7 @@ export function TabShift() {
               />
             </div>
           </div>
-          <Button className="mt-5" onClick={handleGenerate} disabled={loading}>
+          <Button className="mt-5 w-full sm:w-auto" onClick={handleGenerate} disabled={loading}>
             {loading ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
@@ -115,7 +128,7 @@ export function TabShift() {
           </Button>
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-5">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">ITIL triage &amp; hourly schedule</h2>
             <Button
@@ -142,7 +155,7 @@ export function TabShift() {
         </section>
       </div>
 
-      <aside className="space-y-3 rounded-xl border border-border bg-card p-5">
+      <aside className="space-y-3 rounded-xl border border-border bg-card p-4 sm:p-5">
         <h2 className="text-xs font-semibold tracking-[0.16em] uppercase">Saved shift plans</h2>
         <HistoryPanel
           items={items}
