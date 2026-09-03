@@ -93,3 +93,65 @@ Short bullets.`,
     );
     return { text };
   });
+
+/* ---------------------------------------------------------------------------
+ * Production email dispatch
+ *
+ * Gmail app passwords cannot be used safely from the browser: SMTP credentials
+ * would have to travel to (and be stored by) the app. Dispatch therefore runs
+ * server-side through Lovable's managed email infrastructure, which requires a
+ * verified sender domain. Until that domain is set up, dispatch is refused with
+ * an explicit prerequisite message instead of silently "sending".
+ * ------------------------------------------------------------------------- */
+
+function senderDomain(): string | undefined {
+  return process.env["EMAIL_SENDER_DOMAIN"] || process.env["SENDER_DOMAIN"] || undefined;
+}
+
+export const getEmailDispatchStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const domain = senderDomain();
+  return {
+    configured: Boolean(domain),
+    domain: domain ?? null,
+    prerequisite: domain
+      ? null
+      : "A verified sending domain must be connected before emails can be dispatched from this app.",
+  };
+});
+
+const DispatchInput = z.object({
+  to: z.string().email(),
+  subject: z.string().min(1),
+  body: z.string().min(1),
+});
+
+export const dispatchIncidentEmail = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => DispatchInput.parse(input))
+  .handler(async ({ data }) => {
+    const domain = senderDomain();
+    if (!domain) {
+      throw new Error(
+        "Email dispatch is not configured yet. Connect a verified sending domain for this workspace, then send again. Your draft has been kept.",
+      );
+    }
+
+    const apiKey = process.env["LOVABLE_API_KEY"];
+    if (!apiKey) throw new Error("Email service credentials are missing on the server.");
+
+    const response = await fetch("https://api.lovable.dev/v1/email/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
+      body: JSON.stringify({
+        from: `CAPACITI IT Support <noreply@${domain}>`,
+        to: data.to,
+        subject: data.subject,
+        text: data.body,
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Dispatch failed (${response.status}): ${detail.slice(0, 200)}`);
+    }
+    return { sent: true as const, to: data.to };
+  });
