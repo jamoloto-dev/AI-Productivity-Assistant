@@ -42,58 +42,69 @@ function Index() {
   const active = TABS.find((t) => t.id === tab)!;
 
   return (
-    <div className="min-h-screen bg-background lg:flex">
-      <aside className="border-b border-border bg-sidebar p-6 lg:min-h-screen lg:w-80 lg:shrink-0 lg:border-r lg:border-b-0">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <ServerCog className="size-5" />
+    <MailSettingsProvider>
+      <div className="min-h-screen bg-background lg:flex">
+        <aside className="border-b border-border bg-sidebar p-4 sm:p-6 lg:min-h-screen lg:w-80 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-b-0">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <ServerCog className="size-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold tracking-tight">CAPACITI</p>
+              <p className="text-xs text-muted-foreground">IT Support &amp; Workplace Ops</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold tracking-tight">CAPACITI</p>
-            <p className="text-xs text-muted-foreground">IT Support &amp; Workplace Ops</p>
+
+          <nav className="mt-6 space-y-1.5 lg:mt-8">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const isActive = t.id === tab;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  className={`flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="mt-0.5 size-4 shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">{t.label}</span>
+                    <span className="block text-xs opacity-80">{t.hint}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="mt-6">
+            <MailSettings />
           </div>
-        </div>
 
-        <nav className="mt-8 space-y-1.5">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            const isActive = t.id === tab;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                }`}
-              >
-                <Icon className="mt-0.5 size-4 shrink-0" />
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium">{t.label}</span>
-                  <span className="block text-xs opacity-80">{t.hint}</span>
-                </span>
-              </button>
-            );
-          })}
-        </nav>
+          <div className="mt-6">
+            <ResponsibleAIBanner />
+          </div>
+        </aside>
 
-        <div className="mt-8">
-          <ResponsibleAIBanner />
-        </div>
-      </aside>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
+          <header className="mb-6 lg:mb-8">
+            <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+              CAPACITI Service Desk
+            </p>
+            <h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
+              {active.label}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">{active.hint}</p>
+          </header>
 
-      <main className="min-w-0 flex-1 p-6 lg:p-10">
-        <header className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight">{active.label}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{active.hint}</p>
-        </header>
-
-        {tab === "comms" && <TabComms />}
-        {tab === "postmortem" && <TabPostMortem />}
-        {tab === "shift" && <TabShift />}
-      </main>
-    </div>
+          {tab === "comms" && <TabComms />}
+          {tab === "postmortem" && <TabPostMortem />}
+          {tab === "shift" && <TabShift />}
+        </main>
+      </div>
+    </MailSettingsProvider>
   );
 }
