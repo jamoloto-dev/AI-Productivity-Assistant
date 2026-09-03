@@ -2,10 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CalendarClock, FileText, Mail, ServerCog } from "lucide-react";
 
+import { MailSettings } from "@/components/mail-settings";
 import { ResponsibleAIBanner } from "@/components/responsible-ai-banner";
 import { TabComms } from "@/components/tab-comms";
 import { TabPostMortem } from "@/components/tab-postmortem";
 import { TabShift } from "@/components/tab-shift";
+import { MailSettingsProvider } from "@/lib/mail-settings";
 
 export const Route = createFileRoute("/")({
   head: () => ({
