@@ -28,7 +28,11 @@ export async function saveGeneration(entry: {
   input: Record<string, unknown>;
   output: string;
 }): Promise<Generation> {
-  const { data, error } = await supabase.from("generations").insert(entry).select().single();
+  const { data, error } = await supabase
+    .from("generations")
+    .insert({ ...entry, input: entry.input as never })
+    .select()
+    .single();
   if (error) throw error;
   return data as Generation;
 }
