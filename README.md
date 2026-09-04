@@ -22,3 +22,6 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+# API KEY
+AQ.Ab8RN6I2BN7mn6u6JcFlxpYDyS_VNMPS8HmH-hG9Y9v6OIGYoQ
