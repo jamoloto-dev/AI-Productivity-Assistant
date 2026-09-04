@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateWithLovableAI, SAFETY_RULE } from "./ai.server";
 
 export const AUDIENCES = [
@@ -92,6 +93,7 @@ Digital Skills Academy — IT Workplace Operations`;
 }
 
 export const generateComms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CommsInput.parse(input))
   .handler(async ({ data }) => {
     try {
@@ -153,6 +155,7 @@ On the morning of 4 September 2026, an operational permissions defect on the Doc
 }
 
 export const generatePostMortem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => PostMortemInput.parse(input))
   .handler(async ({ data }) => {
     try {
@@ -232,6 +235,7 @@ ${shiftHours >= 8 ? `| **Hour 8 (15:30 - 16:30)** | Final shift handover log pre
 }
 
 export const generateShiftPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ShiftInput.parse(input))
   .handler(async ({ data }) => {
     try {
