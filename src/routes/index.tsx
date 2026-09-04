@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CalendarClock, FileText, Mail, ServerCog } from "lucide-react";
 
+import { AuthGate } from "@/components/auth-gate";
 import { MailSettings } from "@/components/mail-settings";
 import { ResponsibleAIBanner } from "@/components/responsible-ai-banner";
 import { TabComms } from "@/components/tab-comms";
@@ -63,6 +64,7 @@ function Index() {
   const active = TABS.find((t) => t.id === tab)!;
 
   return (
+    <AuthGate>
     <MailSettingsProvider>
       <div className="min-h-screen bg-background lg:flex">
         {/* Sidebar */}
@@ -172,5 +174,6 @@ function Index() {
         </main>
       </div>
     </MailSettingsProvider>
+    </AuthGate>
   );
 }
