@@ -328,5 +328,4 @@ export const dispatchIncidentEmail = createServerFn({ method: "POST" })
       mode: "helpdesk_direct" as const,
       timestamp: new Date().toISOString(),
     };
-
   });
