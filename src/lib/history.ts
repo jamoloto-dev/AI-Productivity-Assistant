@@ -45,6 +45,15 @@ export async function listGenerations(kind: GenerationKind): Promise<Generation[
   return getLocalHistory(kind);
 }
 
+async function currentUserId(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function saveGeneration(entry: {
   kind: GenerationKind;
   title: string;
@@ -61,9 +70,11 @@ export async function saveGeneration(entry: {
   };
 
   try {
+    const userId = await currentUserId();
+    if (!userId) throw new Error("Not signed in");
     const { data, error } = await supabase
       .from("generations")
-      .insert({ ...entry, input: entry.input as never })
+      .insert({ ...entry, user_id: userId, input: entry.input as never })
       .select()
       .single();
     if (!error && data) return data as Generation;
