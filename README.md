@@ -25,3 +25,6 @@ npm run dev
 
 # API KEY
 AQ.Ab8RN6I2BN7mn6u6JcFlxpYDyS_VNMPS8HmH-hG9Y9v6OIGYoQ
+
+# Web Broswer
+https://jafta-moloto-ai-productivity-assistant.lovable.app/auth
