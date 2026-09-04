@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateWithLovableAI, SAFETY_RULE } from "./ai.server";
 
 export const AUDIENCES = [
@@ -92,6 +93,7 @@ Digital Skills Academy — IT Workplace Operations`;
 }
 
 export const generateComms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CommsInput.parse(input))
   .handler(async ({ data }) => {
     try {
@@ -153,6 +155,7 @@ On the morning of 4 September 2026, an operational permissions defect on the Doc
 }
 
 export const generatePostMortem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => PostMortemInput.parse(input))
   .handler(async ({ data }) => {
     try {
@@ -232,6 +235,7 @@ ${shiftHours >= 8 ? `| **Hour 8 (15:30 - 16:30)** | Final shift handover log pre
 }
 
 export const generateShiftPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ShiftInput.parse(input))
   .handler(async ({ data }) => {
     try {
@@ -276,27 +280,33 @@ export const getEmailDispatchStatus = createServerFn({ method: "GET" }).handler(
 });
 
 const DispatchInput = z.object({
-  to: z.string().email("Invalid recipient email address"),
-  subject: z.string().min(1, "Subject is required"),
-  body: z.string().min(1, "Body is required"),
-  senderEmail: z.string().email("Invalid sender email address"),
+  to: z.string().email("Invalid recipient email address").max(254),
+  subject: z.string().min(1, "Subject is required").max(200),
+  body: z.string().min(1, "Body is required").max(20000),
+  // Accepted for backwards compatibility only. The server never uses a
+  // client-supplied address as the sending identity.
+  senderEmail: z.string().email("Invalid sender email address").optional(),
   appPassword: z.string().optional(),
 });
 
 export const dispatchIncidentEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => DispatchInput.parse(input))
   .handler(async ({ data }) => {
     const domain = senderDomain();
     const apiKey = process.env["LOVABLE_API_KEY"];
 
+    // Sender identity is always server-controlled - never taken from the client.
+    const fromAddress = domain ? `noreply@${domain}` : null;
+
     // If real server dispatch domain and API key are configured on server, attempt it
-    if (domain && apiKey) {
+    if (domain && apiKey && fromAddress) {
       try {
         const response = await fetch("https://api.lovable.dev/v1/email/send", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
           body: JSON.stringify({
-            from: `CAPACITI IT Support <${data.senderEmail || `noreply@${domain}`}>`,
+            from: `CAPACITI IT Support <${fromAddress}>`,
             to: data.to,
             subject: data.subject,
             text: data.body,
@@ -314,7 +324,7 @@ export const dispatchIncidentEmail = createServerFn({ method: "POST" })
     return {
       sent: true as const,
       to: data.to,
-      senderEmail: data.senderEmail,
+      senderEmail: fromAddress,
       mode: "helpdesk_direct" as const,
       timestamp: new Date().toISOString(),
     };
