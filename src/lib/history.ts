@@ -11,15 +11,38 @@ export type Generation = {
   created_at: string;
 };
 
+const STORAGE_PREFIX = "capaciti_gen_history_";
+
+function getLocalHistory(kind: GenerationKind): Generation[] {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_PREFIX + kind);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setLocalHistory(kind: GenerationKind, items: Generation[]): void {
+  try {
+    window.localStorage.setItem(STORAGE_PREFIX + kind, JSON.stringify(items.slice(0, 30)));
+  } catch {
+    // ignore
+  }
+}
+
 export async function listGenerations(kind: GenerationKind): Promise<Generation[]> {
-  const { data, error } = await supabase
-    .from("generations")
-    .select("*")
-    .eq("kind", kind)
-    .order("created_at", { ascending: false })
-    .limit(20);
-  if (error) throw error;
-  return (data ?? []) as Generation[];
+  try {
+    const { data, error } = await supabase
+      .from("generations")
+      .select("*")
+      .eq("kind", kind)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (!error && data && data.length > 0) return data as Generation[];
+  } catch {
+    // fallback
+  }
+  return getLocalHistory(kind);
 }
 
 export async function saveGeneration(entry: {
@@ -28,21 +51,60 @@ export async function saveGeneration(entry: {
   input: Record<string, unknown>;
   output: string;
 }): Promise<Generation> {
-  const { data, error } = await supabase
-    .from("generations")
-    .insert({ ...entry, input: entry.input as never })
-    .select()
-    .single();
-  if (error) throw error;
-  return data as Generation;
+  const localItem: Generation = {
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `gen-${Date.now()}`,
+    ...entry,
+    created_at: new Date().toISOString(),
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from("generations")
+      .insert({ ...entry, input: entry.input as never })
+      .select()
+      .single();
+    if (!error && data) return data as Generation;
+  } catch {
+    // fallback
+  }
+
+  const existing = getLocalHistory(entry.kind);
+  setLocalHistory(entry.kind, [localItem, ...existing]);
+  return localItem;
 }
 
 export async function updateGenerationOutput(id: string, output: string): Promise<void> {
-  const { error } = await supabase.from("generations").update({ output }).eq("id", id);
-  if (error) throw error;
+  try {
+    await supabase.from("generations").update({ output }).eq("id", id);
+  } catch {
+    // fallback
+  }
+  for (const kind of ["comms", "postmortem", "shift"] as GenerationKind[]) {
+    const list = getLocalHistory(kind);
+    const item = list.find((x) => x.id === id);
+    if (item) {
+      item.output = output;
+      setLocalHistory(kind, list);
+      break;
+    }
+  }
 }
 
 export async function deleteGeneration(id: string): Promise<void> {
-  const { error } = await supabase.from("generations").delete().eq("id", id);
-  if (error) throw error;
+  try {
+    await supabase.from("generations").delete().eq("id", id);
+  } catch {
+    // fallback
+  }
+  for (const kind of ["comms", "postmortem", "shift"] as GenerationKind[]) {
+    const list = getLocalHistory(kind);
+    const updated = list.filter((x) => x.id !== id);
+    if (updated.length !== list.length) {
+      setLocalHistory(kind, updated);
+      break;
+    }
+  }
 }

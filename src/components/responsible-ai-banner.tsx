@@ -1,24 +1,35 @@
-import { ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 
 export function ResponsibleAIBanner() {
   return (
-    <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
-      <div className="flex items-center gap-2 text-destructive">
-        <ShieldAlert className="size-4" />
-        <h2 className="text-xs font-semibold tracking-[0.16em] uppercase">Responsible AI</h2>
+    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-xs">
+      <div className="flex items-center gap-2 font-semibold text-destructive">
+        <ShieldAlert className="size-4 shrink-0" />
+        <span className="tracking-wider uppercase">Responsible AI &amp; Data Security</span>
       </div>
-      <ul className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground">
-        <li>
-          <span className="font-semibold text-foreground">Human-in-the-Loop:</span> Review all
-          drafts before external delivery.
-        </li>
-        <li>
-          <span className="font-semibold text-foreground">Zero PII Policy:</span> Avoid entering
-          user credentials or private keys.
-        </li>
-        <li>Sanitise logs and ticket text before pasting them into this tool.</li>
-        <li>AI can be wrong. You remain accountable for what CAPACITI communicates.</li>
-      </ul>
+      <div className="mt-3 space-y-2.5 leading-relaxed text-foreground/90">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600" />
+          <p>
+            <strong className="font-semibold text-foreground">Security Notice:</strong> Never input
+            student/staff passwords, API keys, or personal identifiers (PII).
+          </p>
+        </div>
+        <div className="flex items-start gap-2">
+          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
+          <p>
+            <strong className="font-semibold text-foreground">Human-in-the-Loop Policy:</strong>{" "}
+            Review and edit all AI drafts before external delivery.
+          </p>
+        </div>
+        <div className="flex items-start gap-2">
+          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
+          <p>
+            <strong className="font-semibold text-foreground">Verification:</strong> Always test
+            generated terminal commands in a sandbox first.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

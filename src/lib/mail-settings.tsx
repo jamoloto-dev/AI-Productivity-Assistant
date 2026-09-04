@@ -3,30 +3,53 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 type MailSettings = {
   senderEmail: string;
   setSenderEmail: (v: string) => void;
-  /** Kept in memory only for the current tab session — never persisted or sent to storage. */
+  /** Kept in memory only for the current tab session — never persisted to disk or unencrypted storage. */
   appPassword: string;
   setAppPassword: (v: string) => void;
   clearAppPassword: () => void;
+  geminiApiKey: string;
+  setGeminiApiKey: (v: string) => void;
+  clearGeminiApiKey: () => void;
 };
 
 const MailSettingsContext = createContext<MailSettings | null>(null);
 
 const SENDER_KEY = "capaciti.senderEmail";
+const GEMINI_KEY = "capaciti.geminiApiKey";
 
 export function MailSettingsProvider({ children }: { children: ReactNode }) {
   const [senderEmail, setSenderEmail] = useState("");
   const [appPassword, setAppPassword] = useState("");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(SENDER_KEY);
-    if (stored) setSenderEmail(stored);
+    try {
+      const storedSender = window.localStorage.getItem(SENDER_KEY);
+      if (storedSender) setSenderEmail(storedSender);
+      const storedGemini = window.localStorage.getItem(GEMINI_KEY);
+      if (storedGemini) setGeminiApiKey(storedGemini);
+    } catch {
+      // ignore storage access errors
+    }
   }, []);
 
   useEffect(() => {
-    // Only the non-sensitive sender address is remembered. The app password never leaves memory.
-    if (senderEmail) window.localStorage.setItem(SENDER_KEY, senderEmail);
-    else window.localStorage.removeItem(SENDER_KEY);
+    try {
+      if (senderEmail) window.localStorage.setItem(SENDER_KEY, senderEmail);
+      else window.localStorage.removeItem(SENDER_KEY);
+    } catch {
+      // ignore storage access errors
+    }
   }, [senderEmail]);
+
+  useEffect(() => {
+    try {
+      if (geminiApiKey) window.localStorage.setItem(GEMINI_KEY, geminiApiKey);
+      else window.localStorage.removeItem(GEMINI_KEY);
+    } catch {
+      // ignore storage access errors
+    }
+  }, [geminiApiKey]);
 
   const value = useMemo<MailSettings>(
     () => ({
@@ -35,8 +58,11 @@ export function MailSettingsProvider({ children }: { children: ReactNode }) {
       appPassword,
       setAppPassword,
       clearAppPassword: () => setAppPassword(""),
+      geminiApiKey,
+      setGeminiApiKey,
+      clearGeminiApiKey: () => setGeminiApiKey(""),
     }),
-    [senderEmail, appPassword],
+    [senderEmail, appPassword, geminiApiKey],
   );
 
   return <MailSettingsContext.Provider value={value}>{children}</MailSettingsContext.Provider>;

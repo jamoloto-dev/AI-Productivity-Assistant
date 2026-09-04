@@ -15,9 +15,7 @@ export function HistoryPanel({
 }) {
   if (items.length === 0) {
     return (
-      <p className="text-xs text-muted-foreground">
-        Saved drafts for this tab will appear here.
-      </p>
+      <p className="text-xs text-muted-foreground">Saved drafts for this tab will appear here.</p>
     );
   }
   return (
