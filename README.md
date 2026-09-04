@@ -28,3 +28,10 @@ AQ.Ab8RN6I2BN7mn6u6JcFlxpYDyS_VNMPS8HmH-hG9Y9v6OIGYoQ
 
 # Web Broswer
 https://jafta-moloto-ai-productivity-assistant.lovable.app/auth
+
+# User Log
+- After creating an account, wait for the verification email.
+- Verify your email address before attempting to log in.
+- Save your login details securely so you can access the account later.
+- Use the verified email address and password to log in.
+- If your email has not been verified, you will not be able to log in.
